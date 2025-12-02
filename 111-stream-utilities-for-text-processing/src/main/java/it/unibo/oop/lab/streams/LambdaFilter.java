@@ -55,10 +55,12 @@ public final class LambdaFilter extends JFrame {
             .get();
         }),
         WORD_COUNTER("Word Counter", s -> {
+            // It works, but it's not done the way it was intended to be done.
+            // Replace with single instruction that uses the 'collect()' Stream method.
             final Map<String, Integer> counter = new HashMap<>();
             s.replace(" ", " \n")
             .lines()
-            .forEach(word -> counter.merge(word, counter.getOrDefault(word, 1), (older, newer) -> older + 1));
+            .forEach(word -> counter.merge(word, counter.getOrDefault(word, 1), (older, newer) -> older++));
 
             return counter.toString();
         });
