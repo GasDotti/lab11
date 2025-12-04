@@ -7,8 +7,8 @@ import java.awt.GridLayout;
 import java.awt.LayoutManager;
 import java.awt.Toolkit;
 import java.io.Serial;
+import java.util.Arrays;
 import java.util.HashMap;
-import java.util.Map;
 import java.util.Objects;
 import java.util.function.Function;
 
@@ -48,21 +48,24 @@ public final class LambdaFilter extends JFrame {
         COUNT_CHARS("Count Characters", s -> String.valueOf(s.length() - s.lines().count() + 1)),
         COUNT_LINES("Count Lines", s -> String.valueOf(s.lines().count())),
         ALPHABETICAL_ORDER("Sort in Alphabetical Order", s -> {
-            return s.replace(" ", " \n")
+            return s.replace("\s", " \n")
             .lines()
             .sorted()
             .reduce(String::concat)
             .get();
         }),
-        WORD_COUNTER("Word Counter", s -> {
-            // It works, but it's not done the way it was intended to be done.
-            // Replace with single instruction that uses the 'collect()' Stream method.
-            final Map<String, Integer> counter = new HashMap<>();
-            s.replace(" ", " \n")
-            .lines()
-            .forEach(word -> counter.merge(word, counter.getOrDefault(word, 1), (older, newer) -> older++));
-
-            return counter.toString();
+        WORD_COUNTER("Word Counter", (String s) -> {
+            return Arrays.stream(s.split("[\n ]"))
+            .filter(word -> !word.isBlank())
+            .collect(
+            () -> new HashMap<String, Integer>(),
+            (a, b) -> a.merge(b, 1, (older, newer) -> older++),
+            HashMap::putAll)
+            .entrySet()
+            .stream()
+            .map(m -> m.getKey().concat(" -> ".concat(m.getValue().toString()).concat(" ")))
+            .reduce(String::concat)
+            .orElse("null");
         });
 
         private final String commandName;
